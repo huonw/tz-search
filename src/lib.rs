@@ -8,6 +8,8 @@
 //! > (~1 MB), and incredibly fast lookups (~0.5 microseconds). It does not
 //! > try to be perfectly accurate when very close to borders.
 //!
+//! [Source](https://github.com/huonw/tz-search).
+//!
 //! # Installation
 //!
 //! Add the following to your `Cargo.toml`:
