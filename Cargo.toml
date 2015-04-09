@@ -2,7 +2,7 @@
 name = "tz-search"
 version = "0.1.0"
 authors = ["Huon Wilson <dbau.pp@gmail.com>"]
-licence = "Apache-2.0"
+license = "Apache-2.0"
 keywords = ["timezone", "position"]
 homepage = "https://github.com/huonw/tz-search"
 repository = "https://github.com/huonw/tz-search"
