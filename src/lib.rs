@@ -8,6 +8,15 @@
 //! > (~1 MB), and incredibly fast lookups (~0.5 microseconds). It does not
 //! > try to be perfectly accurate when very close to borders.
 //!
+//! # Installation
+//!
+//! Add the following to your `Cargo.toml`:
+//!
+//! ```toml
+//! [dependencies]
+//! tz-search = "0.1"
+//! ```
+//!
 //! # Examples
 //!
 //! ```rust
