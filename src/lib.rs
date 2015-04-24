@@ -5,8 +5,10 @@
 //! the same bonuses/caveats apply:
 //!
 //! > It tries to have a small binary size (~360 KB), low memory footprint
-//! > (~1 MB), and incredibly fast lookups (~0.5 microseconds). It does not
+//! > (~1 MB), and incredibly fast lookups (...). It does not
 //! > try to be perfectly accurate when very close to borders.
+//!
+//! A time-zone lookup with this library takes on the order of 150 ns.
 //!
 //! [Source](https://github.com/huonw/tz-search).
 //!
@@ -29,6 +31,7 @@
 //! assert_eq!(tz_search::lookup(0.0, 0.0), None);
 //! ```
 
+#![cfg_attr(all(test, feature = "experimental"), feature(test))]
 
 extern crate flate2;
 extern crate rustc_serialize;
@@ -132,9 +135,9 @@ impl TzSearch {
     /// Create a new `TzSearch`.
     ///
     /// This is very expensive: the initialisation routine takes a
-    /// long time, and the resulting structure uses a lot of
-    /// memory. Hence, this should be called as rarely as
-    /// possible.
+    /// long time (15 ms, compared to 150 *nano*seconds for `lookup`
+    /// itself), and the resulting structure uses a lot of
+    /// memory. Hence, this should be called as rarely as possible.
     ///
     /// The free-standing `lookup` function internally manages
     /// creating exactly one of these, and should be preferred.
@@ -343,5 +346,33 @@ mod tests {
         for &(lat, lon, ref want) in &tests {
             assert_eq!(searcher.lookup_pixel(lat, lon), want.map(|s| s.to_string()));
         }
+    }
+}
+
+#[cfg(all(test, feature = "experimental"))]
+mod benches {
+    extern crate test;
+
+    #[bench]
+    pub fn init(b: &mut test::Bencher) {
+        b.iter(|| super::TzSearch::new());
+    }
+    #[bench]
+    pub fn lookup(b: &mut test::Bencher) {
+        // ensure the searcher is initialised
+        super::lookup(0., 0.);
+
+        b.iter(|| {
+            let mut count = 0;
+            // step over the whole world, about half of these
+            // 22438/43681 are real timezones, the rest are in the
+            // ocean.
+            for lat in -60..60 + 1 {
+                for lng in -180..180 + 1 {
+                    count += super::lookup(lat as f64, lng as f64).is_some() as usize
+                }
+            }
+            count
+        })
     }
 }

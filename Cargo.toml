@@ -17,3 +17,6 @@ Compute the timezone of latitude/longitude pairs.
 byteorder = "0.3"
 flate2 = "0.2"
 rustc-serialize = "0.3"
+
+[features]
+experimental = []
