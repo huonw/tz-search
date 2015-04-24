@@ -1,6 +1,6 @@
 [package]
 name = "tz-search"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Huon Wilson <dbau.pp@gmail.com>"]
 license = "Apache-2.0"
 keywords = ["timezone", "position"]
