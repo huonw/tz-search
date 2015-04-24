@@ -222,8 +222,8 @@ impl TzSearch {
     ///
     /// ```rust
     /// let s = tz_search::TzSearch::new();
-    /// let (lat, long) = (-33.79, 151.17);
-    /// assert_eq!(s.lookup(-33.79, 151.17).unwrap(),
+    /// let (lat, long) = (-33.8885, 151.1908);
+    /// assert_eq!(s.lookup(lat, long).unwrap(),
     ///            "Australia/Sydney");
     /// ```
     pub fn lookup(&self, lat: f64, long: f64) -> Option<String> {
@@ -304,7 +304,8 @@ mod tests {
     fn test_lookup_lat_long() {
         let searcher = TzSearch::new();
         let tests = [(37.7833, -122.4167, Some("America/Los_Angeles")),
-                     (-33.79, 151.17, Some("Australia/Sydney"))];
+                     (-33.8885, 151.1908, Some("Australia/Sydney")),
+                     (0.0, 0.0, None)];
         for &(lat, lon, want) in &tests {
             let want = want.map(|s| s.to_string());
             assert_eq!(searcher.lookup(lat, lon), want);
