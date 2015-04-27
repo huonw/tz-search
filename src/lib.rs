@@ -24,7 +24,8 @@
 //! # Examples
 //!
 //! ```rust
-//! assert_eq!(tz_search::lookup(-33.79, 151.17).unwrap(),
+//! let (lat, long) = (-33.8885, 151.1908);
+//! assert_eq!(tz_search::lookup(lat, long).unwrap(),
 //!            "Australia/Sydney");
 //!
 //! // in the ocean
@@ -62,7 +63,8 @@ mod tables;
 /// # Examples
 ///
 /// ```rust
-/// assert_eq!(tz_search::lookup(-33.79, 151.17).unwrap(),
+/// let (lat, long) = (-33.8885, 151.1908);
+/// assert_eq!(tz_search::lookup(lat, long).unwrap(),
 ///            "Australia/Sydney");
 ///
 /// // in the ocean
