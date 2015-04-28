@@ -32,7 +32,7 @@
 //! assert_eq!(tz_search::lookup(0.0, 0.0), None);
 //! ```
 
-#![cfg_attr(all(test, feature = "experimental"), feature(test))]
+#![cfg_attr(all(test, feature = "unstable"), feature(test))]
 
 extern crate flate2;
 extern crate rustc_serialize;
@@ -351,7 +351,7 @@ mod tests {
     }
 }
 
-#[cfg(all(test, feature = "experimental"))]
+#[cfg(all(test, feature = "unstable"))]
 mod benches {
     extern crate test;
 
