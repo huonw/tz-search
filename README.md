@@ -1,6 +1,6 @@
 # `tz-search`
 
-[![Build Status](https://travis-ci.org/huonw/tz-search.png)](https://travis-ci.org/huonw/tz-search)
+[![Build Status](https://travis-ci.org/huonw/tz-search.png)](https://travis-ci.org/huonw/tz-search) [![Coverage Status](https://coveralls.io/repos/huonw/tz-search/badge.svg?branch=master)](https://coveralls.io/r/huonw/tz-search?branch=master)
 
 Map a latitude/longitude point to the timezone it lies in.
 
