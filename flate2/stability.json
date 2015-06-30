@@ -1,0 +1,1 @@
+{"name":"flate2","counts":{"deprecated":0,"unstable":0,"stable":14,"unmarked":82},"submodules":[{"name":"read","counts":{"deprecated":0,"unstable":0,"stable":6,"unmarked":27},"submodules":[]},{"name":"write","counts":{"deprecated":0,"unstable":0,"stable":6,"unmarked":21},"submodules":[]}]}

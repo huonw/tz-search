@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `TzSearch` struct in crate `tz_search`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, TzSearch">
+
+    <title>tz_search::TzSearch - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='index.html'>tz_search</a></p><script>window.sidebarCurrent = {name: 'TzSearch', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>tz_search</a>::<wbr><a class='struct' href=''>TzSearch</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-655' href='../src/tz_search/lib.rs.html#115-118'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct TzSearch {
+    // some fields omitted
+}</pre><div class='docblock'><p>All the information required for efficient time-zone lookups.</p>
+
+<p>Unless you need absolutely strict control over memory use, you
+probably want to call the top-level <code>lookup</code>, rather than going
+via this.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl <a class='struct' href='../tz_search/struct.TzSearch.html' title='tz_search::TzSearch'>TzSearch</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../tz_search/struct.TzSearch.html' title='tz_search::TzSearch'>TzSearch</a></code></h4>
+<div class='docblock'><p>Create a new <code>TzSearch</code>.</p>
+
+<p>This is very expensive: the initialisation routine takes a
+long time (15 ms, compared to 150 *nano*seconds for <code>lookup</code>
+itself), and the resulting structure uses a lot of
+memory. Hence, this should be called as rarely as possible.</p>
+
+<p>The free-standing <code>lookup</code> function internally manages
+creating exactly one of these, and should be preferred.</p>
+</div><h4 id='method.lookup' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.lookup' class='fnname'>lookup</a>(&amp;self, lat: <a href='http://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>, long: <a href='http://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<div class='docblock'><p>Attempt to compute the timezone that the point <code>lat</code>, <code>long</code>
+lies in.</p>
+
+<p>The latitude <code>lat</code> should lie in the range <code>[-90, 90]</code> with
+negative representing south, and the longitude should lie in
+the range <code>[-180, 180]</code> with negative representing west. This
+will fail (return <code>None</code>) if the point lies in the ocean.</p>
+
+<p>See also: the <code>lookup</code> function at the top-level.</p>
+
+<h1 id="panics" class='section-header'><a
+                           href="#panics">Panics</a></h1>
+<p><code>lookup</code> will panic if either of the two ranges above are
+violated.</p>
+
+<h1 id="examples" class='section-header'><a
+                           href="#examples">Examples</a></h1><pre id='rust-example-rendered' class='rust '>
+<span class='kw'>let</span> <span class='ident'>s</span> <span class='op'>=</span> <span class='ident'>tz_search</span>::<span class='ident'>TzSearch</span>::<span class='ident'>new</span>();
+<span class='kw'>let</span> (<span class='ident'>lat</span>, <span class='ident'>long</span>) <span class='op'>=</span> (<span class='op'>-</span><span class='number'>33.8885</span>, <span class='number'>151.1908</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>s</span>.<span class='ident'>lookup</span>(<span class='ident'>lat</span>, <span class='ident'>long</span>).<span class='ident'>unwrap</span>(),
+           <span class='string'>&quot;Australia/Sydney&quot;</span>);
+</pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../tz_search/struct.TzSearch.html' title='tz_search::TzSearch'>TzSearch</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='http://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='http://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "tz_search";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>

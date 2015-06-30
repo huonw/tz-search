@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["lookup","Attempt to compute the timezone that the point `lat`, `long` lies in."]],"struct":[["TzSearch","All the information required for efficient time-zone lookups."]]});
