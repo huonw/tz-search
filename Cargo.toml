@@ -7,6 +7,7 @@ keywords = ["timezone", "position"]
 homepage = "https://github.com/huonw/tz-search"
 repository = "https://github.com/huonw/tz-search"
 documentation = "http://huonw.github.io/tz-search/tz_search/"
+edition = "2021"
 
 description = """
 Compute the timezone of latitude/longitude pairs.
@@ -15,8 +16,8 @@ Compute the timezone of latitude/longitude pairs.
 
 [dependencies]
 byteorder = "0.3"
-flate2 = "0.2"
-rustc-serialize = "0.3"
+flate2 = "1.0"
+once_cell = "1"
 
 [features]
 unstable = []

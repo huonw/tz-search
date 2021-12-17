@@ -32,20 +32,18 @@
 //! assert_eq!(tz_search::lookup(0.0, 0.0), None);
 //! ```
 
-#![cfg_attr(all(test, feature = "unstable"), feature(test))]
-
-extern crate flate2;
-extern crate rustc_serialize;
 extern crate byteorder;
+extern crate flate2;
 
-use std::{cmp, mem, sync};
-use std::sync::atomic;
+use byteorder::{BigEndian, ReadBytesExt};
+use once_cell::sync::Lazy;
+use std::cmp;
 use std::io::prelude::*;
 use std::io::BufReader;
-use byteorder::{BigEndian, ReadBytesExt};
 
-#[allow(warnings)]
 mod tables;
+
+static INSTANCE: Lazy<TzSearch> = Lazy::new(|| TzSearch::new());
 
 /// Attempt to compute the timezone that the point `lat`, `long`
 /// lies in.
@@ -71,18 +69,7 @@ mod tables;
 /// assert_eq!(tz_search::lookup(0.0, 0.0), None);
 /// ```
 pub fn lookup(lat: f64, lon: f64) -> Option<String> {
-    static SHARED: atomic::AtomicUsize = atomic::ATOMIC_USIZE_INIT;
-    static ONCE: sync::Once = sync::ONCE_INIT;
-
-    ONCE.call_once(|| {
-        let s = Box::new(TzSearch::new());
-        SHARED.store(unsafe {mem::transmute(s)}, atomic::Ordering::Relaxed);
-    });
-
-    let ptr = SHARED.load(atomic::Ordering::Relaxed);
-    assert!(ptr != 0);
-    let s = unsafe {&*(ptr as *const TzSearch)};
-    s.lookup(lat, lon)
+    INSTANCE.lookup(lat, lon)
 }
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
@@ -92,7 +79,7 @@ impl TileKey {
         let size = size as u32;
         let x = x as u32;
         let y = y as u32;
-        TileKey((size % 8) << 28 | (y % (1<<14)) << 14 | (x % (1<<14)))
+        TileKey((size % 8) << 28 | (y % (1 << 14)) << 14 | (x % (1 << 14)))
     }
 }
 
@@ -103,7 +90,7 @@ struct TileLooker {
 }
 #[derive(Debug)]
 struct ZoomLevel {
-    tiles: Vec<TileLooker>
+    tiles: Vec<TileLooker>,
 }
 #[derive(Debug)]
 
@@ -120,8 +107,9 @@ pub struct TzSearch {
 enum Zone {
     StaticZone(String),
     OneBitTile([u16; 2], [u8; 8]),
-    Pixmap([u8; 128])
+    Pixmap([u8; 128]),
 }
+
 impl std::fmt::Debug for Zone {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
@@ -131,7 +119,6 @@ impl std::fmt::Debug for Zone {
         }
     }
 }
-
 
 impl TzSearch {
     /// Create a new `TzSearch`.
@@ -146,9 +133,10 @@ impl TzSearch {
     pub fn new() -> TzSearch {
         let mut zoom_levels = vec![];
         for data in tables::REV_ZOOM_LEVELS.iter().rev() {
-            let unb64d = rustc_serialize::base64::FromBase64::from_base64(*data).unwrap();
             let mut slurp = vec![];
-            flate2::read::GzDecoder::new(&*unb64d).unwrap().read_to_end(&mut slurp).unwrap();
+            flate2::read::GzDecoder::new(*data)
+                .read_to_end(&mut slurp)
+                .unwrap();
             assert_eq!(slurp.len() % 6, 0);
             let count = slurp.len() / 6;
 
@@ -164,21 +152,23 @@ impl TzSearch {
             zoom_levels.push(ZoomLevel { tiles: tiles })
         }
         let mut leaves = Vec::with_capacity(tables::NUM_LEAVES);
-        let unb64d = rustc_serialize::base64::FromBase64::from_base64(tables::UNIQUE_LEAVES_PACKED)
-            .unwrap();
-        let mut ungz = BufReader::new(flate2::read::GzDecoder::new(&*unb64d).unwrap());
+        let mut ungz = BufReader::new(flate2::read::GzDecoder::new(tables::UNIQUE_LEAVES_PACKED));
         let mut buf = [0; 128];
         for _ in 0..tables::NUM_LEAVES {
             let zone = match ungz.read_u8().unwrap() {
                 b'S' => {
                     let mut zone_name = vec![];
                     ungz.read_until(0, &mut zone_name).unwrap();
-                    if zone_name.last() == Some(&0) { zone_name.pop(); }
+                    if zone_name.last() == Some(&0) {
+                        zone_name.pop();
+                    }
                     Zone::StaticZone(String::from_utf8(zone_name).unwrap())
                 }
                 b'2' => {
-                    let idx = [ungz.read_u16::<BigEndian>().unwrap(),
-                               ungz.read_u16::<BigEndian>().unwrap()];
+                    let idx = [
+                        ungz.read_u16::<BigEndian>().unwrap(),
+                        ungz.read_u16::<BigEndian>().unwrap(),
+                    ];
                     let bits = ungz.read_u64::<BigEndian>().unwrap();
                     let mut rows = [0; 8];
                     for (y, place) in rows.iter_mut().enumerate() {
@@ -197,14 +187,14 @@ impl TzSearch {
                     }
                     Zone::Pixmap(buf)
                 }
-                _ => panic!("unknown leaf type")
+                _ => panic!("unknown leaf type"),
             };
             leaves.push(zone)
         }
 
         TzSearch {
             zoom_levels: zoom_levels,
-            leaves: leaves
+            leaves: leaves,
         }
     }
 
@@ -251,7 +241,7 @@ impl TzSearch {
             let yt = y >> shift;
             let tk = TileKey::new(level, xt as u16, yt as u16);
             if let Some(ret) = self.zoom_level_lookup(&self.zoom_levels[level as usize], x, y, tk) {
-                return ret
+                return ret;
             }
         }
         None
@@ -272,7 +262,7 @@ impl TzSearch {
                 let xx = x & 7;
                 let yy = y & 7;
                 let i = 2 * (yy * 8 + xx);
-                let idx = ((p[i] as usize) << 8) + p[i+1] as usize;
+                let idx = ((p[i] as usize) << 8) + p[i + 1] as usize;
                 const OCEAN_INDEX: usize = 0xFFFF;
                 if idx == OCEAN_INDEX {
                     Some(None)
@@ -283,18 +273,24 @@ impl TzSearch {
         }
     }
 
-    fn zoom_level_lookup(&self, zl: &ZoomLevel, x: usize, y: usize, tk: TileKey)
-                         -> Option<Option<String>>
-    {
-        let pos = zl.tiles.binary_search_by(|t| t.tile.cmp(&tk)).unwrap_or_else(|x| x);
+    fn zoom_level_lookup(
+        &self,
+        zl: &ZoomLevel,
+        x: usize,
+        y: usize,
+        tk: TileKey,
+    ) -> Option<Option<String>> {
+        let pos = zl
+            .tiles
+            .binary_search_by(|t| t.tile.cmp(&tk))
+            .unwrap_or_else(|x| x);
 
         match zl.tiles.get(pos) {
             Some(tl) if tl.tile == tk => self.zone_lookup(&self.leaves[tl.idx as usize], x, y, tk),
-            _ => None
+            _ => None,
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -308,9 +304,11 @@ mod tests {
     #[test]
     fn test_lookup_lat_long() {
         let searcher = TzSearch::new();
-        let tests = [(37.7833, -122.4167, Some("America/Los_Angeles")),
-                     (-33.8885, 151.1908, Some("Australia/Sydney")),
-                     (0.0, 0.0, None)];
+        let tests = [
+            (37.7833, -122.4167, Some("America/Los_Angeles")),
+            (-33.8885, 151.1908, Some("Australia/Sydney")),
+            (0.0, 0.0, None),
+        ];
         for &(lat, lon, want) in &tests {
             let want = want.map(|s| s.to_string());
             assert_eq!(searcher.lookup(lat, lon), want);
@@ -323,58 +321,25 @@ mod tests {
         let tests = [
             (9200, 2410, Some("Asia/Phnom_Penh")),
             (9047, 2488, Some("Asia/Phnom_Penh")),
-
             // one-bit leaf tile:
             (9290, 530, Some("Asia/Krasnoyarsk")),
             (9290, 531, Some("Asia/Yakutsk")),
-
             // four-bit tile:
             (2985, 1654, Some("America/Indiana/Vincennes")),
             (2986, 1654, Some("America/Indiana/Marengo")),
             (2986, 1655, Some("America/Indiana/Tell_City")),
-
             // Empty tile:
             (4000, 2000, None),
-
             // Big 1-color tile in ocean with island:
             (3687, 1845, Some("Atlantic/Bermuda")),
             // Same, but off Oregon coast:
             (1747, 1486, Some("America/Los_Angeles")),
-
             // Little solid tile:
             (2924, 2316, Some("America/Belize")),
-            ];
+        ];
 
         for &(lat, lon, ref want) in &tests {
             assert_eq!(searcher.lookup_pixel(lat, lon), want.map(|s| s.to_string()));
         }
-    }
-}
-
-#[cfg(all(test, feature = "unstable"))]
-mod benches {
-    extern crate test;
-
-    #[bench]
-    pub fn init(b: &mut test::Bencher) {
-        b.iter(|| super::TzSearch::new());
-    }
-    #[bench]
-    pub fn lookup(b: &mut test::Bencher) {
-        // ensure the searcher is initialised
-        super::lookup(0., 0.);
-
-        b.iter(|| {
-            let mut count = 0;
-            // step over the whole world, about half of these
-            // 22438/43681 are real timezones, the rest are in the
-            // ocean.
-            for lat in -60..60 + 1 {
-                for lng in -180..180 + 1 {
-                    count += super::lookup(lat as f64, lng as f64).is_some() as usize
-                }
-            }
-            count
-        })
     }
 }
